@@ -1,47 +1,55 @@
 // ✅ Cleaned and fixed script.js (deep linking, stable slide loading)
 
 const sheetDataArray = [];
-const url = 'https://docs.google.com/spreadsheets/d/1SFM2os72yBHs1k3nQfY2TAr_pNVrU_ePNuDcGR_LJlQ/gviz/tq?tqx=out:json';
+const url =
+  "https://docs.google.com/spreadsheets/d/1SFM2os72yBHs1k3nQfY2TAr_pNVrU_ePNuDcGR_LJlQ/gviz/tq?tqx=out:json";
 
 let nameColumnIndex = -1;
 let osColumnIndex = -1;
 let typeColumnIndex = -1;
 let stepsColumnIndex = -1;
 let currentCarouselSlide = 0;
+let currentOS = 0;
+let currentTopic = 0;
 let deepLinkParams = {};
 
+console.log(deepLinkParams);
+
 /* ========== 1. Fetch and Initialize ========== */
-document.addEventListener('DOMContentLoaded', () => {
-  setupCollapsibles();
+document.addEventListener("DOMContentLoaded", () => {
+  /* setupCollapsibles(); */
 
   fetch(url)
-    .then(response => response.text())
+    .then((response) => response.text())
     .then(processSheetData)
-    .catch(error => console.error('Error fetching data:', error));
+    .catch((error) => console.error("Error fetching data:", error));
 });
 
 function getQueryParam(key) {
+  console.log(`Querying Params with ${key}`);
   const params = new URLSearchParams(window.location.search);
   const value = params.get(key);
   return value ? decodeURIComponent(value) : null;
 }
 
 function updateURL(topic, os, slide) {
+  console.log(`Updating URL: ${topic},${os},${slide}`);
   const currentParams = new URLSearchParams(window.location.search);
-  if (topic) currentParams.set('topic', topic);
-  if (os) currentParams.set('os', os);
-  if (!isNaN(slide)) currentParams.set('slide', slide);
+  if (topic) currentParams.set("topic", topic);
+  if (os) currentParams.set("os", os);
+  if (!isNaN(slide)) currentParams.set("slide", slide);
 
   const newUrl = `${window.location.pathname}?${currentParams.toString()}`;
-  history.pushState(null, '', newUrl);
+  history.pushState(null, "", newUrl);
 }
 
 /* ========== 2. Data Processing ========== */
 function processSheetData(data) {
+  console.log("Processing all Data");
   const jsonData = JSON.parse(data.substring(47).slice(0, -2));
   const rows = jsonData.table.rows;
 
-  const headerRow = rows[0].c.map(cell => cell?.v || '');
+  const headerRow = rows[0].c.map((cell) => cell?.v || "");
   sheetDataArray.push(headerRow);
 
   for (let i = 0; i < headerRow.length; i++) {
@@ -52,30 +60,38 @@ function processSheetData(data) {
     if (header === "Steps") stepsColumnIndex = i;
   }
 
-  deepLinkParams.topic = getQueryParam('topic');
-  deepLinkParams.os = getQueryParam('os');
-  deepLinkParams.slide = parseInt(getQueryParam('slide'), 10);
+  deepLinkParams.topic = getQueryParam("topic");
+  deepLinkParams.os = getQueryParam("os");
+  deepLinkParams.slide = parseInt(getQueryParam("slide"), 10);
 
-  rows.slice(1).forEach(row => {
+  rows.slice(1).forEach((row) => {
     if (row.c[typeColumnIndex]?.v === "imageDrive") return;
 
     const rowData = row.c.map((cell, index) => {
-      const cellValue = cell?.v || '';
-      if (row.c[typeColumnIndex]?.v === 'image' && index > typeColumnIndex && cellValue) {
-        return `<img src="${cellValue}" alt="Image">`;
+      const cellValue = cell?.v || "";
+      if (
+        row.c[typeColumnIndex]?.v === "image" &&
+        index > typeColumnIndex &&
+        cellValue
+      ) {
+        return `<img src="${cellValue}" style="width:100%" alt="Image">`;
       }
       return cellValue;
     });
 
-    while (rowData.length > 0 && rowData[rowData.length - 1] === '') rowData.pop();
+    while (rowData.length > 0 && rowData[rowData.length - 1] === "")
+      rowData.pop();
     sheetDataArray.push(rowData);
   });
 
-  renderFullTable();
+  console.log("Imported Sheet:");
+  console.table(sheetDataArray);
+  //renderFullTable();
   populateButtons();
   handleDeepLink();
 }
 
+/*
 function renderFullTable() {
     const table = sheetDataArray.map((row, i) =>
       `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`
@@ -84,20 +100,27 @@ function renderFullTable() {
     const headers = `<tr>${sheetDataArray[0].map((_, i) => `<th>Column ${i + 1}</th>`).join('')}</tr>`;
     document.getElementById('sheet-data').innerHTML = `<table border="1">${headers}${table}</table>`;
   }
+*/
 
 /* ========== 3. Deep Linking ========== */
 function handleDeepLink() {
+  console.log("DeepLink Handling");
   const { topic, os } = deepLinkParams;
   if (!topic || !os) return;
 
   const tryActivate = setInterval(() => {
-    const topicButtons = Array.from(document.querySelectorAll('#topic-buttons button'));
-    const matchButton = topicButtons.find(btn => btn.textContent.trim() === topic);
+    const topicButtons = Array.from(
+      document.querySelectorAll("#topic-buttons .btn")
+    );
+    const matchButton = topicButtons.find(
+      (btn) => btn.textContent.trim() === topic
+    );
 
     if (matchButton) {
-      const rows = matchButton.getAttribute('data-rows').split(',').map(Number);
+      const rows = matchButton.getAttribute("data-rows").split(",").map(Number);
+      populateOSButtons(rows, os);
       showContent(rows, os);
-      populateTabs(rows, os);
+      
       clearInterval(tryActivate);
     }
   }, 100);
@@ -105,7 +128,8 @@ function handleDeepLink() {
 
 /* ========== 4. UI Rendering ========== */
 function populateButtons() {
-  const buttonsContainer = document.getElementById('topic-buttons');
+  console.log("Populating Topic buttons");
+  const buttonsContainer = document.getElementById("topic-buttons");
   const groupedRows = {};
 
   sheetDataArray.forEach((row, index) => {
@@ -116,82 +140,149 @@ function populateButtons() {
   });
 
   Object.entries(groupedRows).forEach(([text, indices], groupIndex) => {
-    const button = document.createElement('button');
+    const button = document.createElement("button");
     button.textContent = text;
-    button.setAttribute('data-rows', indices.join(','));
+    button.setAttribute("data-rows", indices.join(","));
+    button.classList.add('btn', 'btn-dmz-purple');
 
-    const tabValues = [...new Set(indices.map(i => sheetDataArray[i][osColumnIndex]))];
+    const tabValues = [
+      ...new Set(indices.map((i) => sheetDataArray[i][osColumnIndex])),
+    ];
     const defaultTab = tabValues[0];
 
     button.onclick = () => {
+      console.log("~");
+      console.log(`Clicked on Topic ${text}`);
+      
+      // Remove active from all topic buttons
+      document.querySelectorAll('#topic-buttons .btn').forEach(btn => {
+        btn.classList.remove('active', 'btn-dmz-purple');
+        btn.classList.add('btn-dmz-purple');
+      });
+      // Set active for this button
+      button.classList.remove('btn-dmz-purple');
+      button.classList.add('active', 'btn-dmz-purple');
+
+      populateOSButtons(indices, defaultTab);
+      goToCarouselSlide(0);
       showContent(indices, defaultTab);
-      populateTabs(indices, defaultTab);
-      updateURL(text, defaultTab, currentCarouselSlide);
     };
 
-    if (!deepLinkParams.topic && groupIndex === 0) {
-      button.classList.add('active');
+    
+    /* if (!deepLinkParams.topic && groupIndex === 0) {
+      button.classList.remove('btn-dmz-purple');
+      button.classList.add('active', 'btn-dmz-purple');
       showContent(indices, defaultTab);
-      populateTabs(indices, defaultTab);
-    }
+      populateOSButtons(indices, defaultTab);
+    } */
 
     buttonsContainer.appendChild(button);
   });
 }
 
-function populateTabs(rowIndices, activeTabValue = null) {
-  const tabContainer = document.getElementById('os-buttons');
-  tabContainer.innerHTML = '';
+function populateOSButtons(rowIndices, activeOSValue = null) {
+  console.log("Populating OS buttons");
+  const osContainer = document.getElementById("os-buttons");
+  osContainer.innerHTML = "";
+  const osValues = [
+    ...new Set(rowIndices.map((i) => sheetDataArray[i][osColumnIndex])),
+  ];
 
-  const tabValues = [...new Set(rowIndices.map(i => sheetDataArray[i][osColumnIndex]))];
+  console.log(`Creating OS Button for: ${osValues}`);
+  osValues.forEach((osValue, index) => {
+    let button;
 
-  tabValues.forEach((tabValue, index) => {
-    const button = document.createElement('button');
-    button.textContent = tabValue;
-    button.classList.add('tab-button');
-    button.setAttribute('data-tab', tabValue);
-    button.onclick = () => {
-      showContent(rowIndices, tabValue);
-      populateTabs(rowIndices, tabValue);
-      const topic = document.querySelector('.buttons-column button.active')?.textContent;
-      updateURL(topic, tabValue, currentCarouselSlide);
-    };
+    
+      // Create new button
+      button = document.createElement("button");
+      button.textContent = osValue;
+      button.classList.add("btn", "btn-dmz-purple", "os-button");
+      button.classList.remove('active');
+      button.setAttribute("data-os", osValue);
+      osContainer.appendChild(button);
 
-    if (tabValue === activeTabValue || (!activeTabValue && index === 0)) {
-      button.classList.add('active');
-    }
+      button.addEventListener("click", function () {
 
-    tabContainer.appendChild(button);
+        const topic = document.querySelector("#topic-buttons .active")?.textContent;
+        console.log("~~");
+        console.log(`Clicked on ${button.textContent} for Topic: ${topic}`);
+
+        // Handle class toggle
+        document.querySelectorAll('#os-buttons .btn').forEach(btn => {
+          btn.classList.remove('active', 'btn-dmz-purple');
+          btn.classList.add('btn-dmz-purple');
+        });
+        button.classList.remove('btn-dmz-purple');
+        button.classList.add('active', 'btn-dmz-purple');
+
+        goToCarouselSlide(0);
+        showContent(rowIndices, osValue);
+      });
+    
+
+    // Set active state
+  /*   if (osValue === activeOSValue || (!activeOSValue && index === 0)) {
+      button.classList.remove("btn-dmz-purple");
+      button.classList.add("active", "btn-dmz-purple");
+    } else {
+      button.classList.remove("active");
+      button.classList.add("btn-dmz-purple");
+    } */
   });
 }
 
-function showContent(rowIndices, tabValue) {
-  document.querySelectorAll('.buttons-column button').forEach(btn => btn.classList.remove('active'));
-  const matchBtn = document.querySelector(`button[data-rows="${rowIndices.join(',')}"]`);
-  if (matchBtn) matchBtn.classList.add('active');
 
-  document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-  const tabMatchBtn = document.querySelector(`button[data-tab="${tabValue}"]`);
-  if (tabMatchBtn) tabMatchBtn.classList.add('active');
+function showContent(rowIndices, osValue) {
+  console.log(`Showing Content for rows ${rowIndices} and OS ${osValue}`);
+  document
+    .querySelectorAll("#topic-buttons .btn")
+    .forEach((btn) => btn.classList.remove("active"));
+  const matchBtn = document.querySelector(
+    `button[data-rows="${rowIndices.join(",")}"]`
+  );
+  console.log(`matchbtn:`);
+  console.log(matchBtn);
+  if (matchBtn) matchBtn.classList.add("active");
 
-  const filteredIndices = rowIndices.filter(index => sheetDataArray[index][osColumnIndex] === tabValue);
-  const tableData = filteredIndices.map(rowIndex => sheetDataArray[rowIndex].slice(stepsColumnIndex));
-  const tableType = filteredIndices.map(rowIndex => sheetDataArray[rowIndex][typeColumnIndex]);
+  document
+    .querySelectorAll("#os-button .btn")
+    .forEach((btn) => btn.classList.remove("active"));
+  const osMatchBtn = document.querySelector(`button[data-os="${osValue}"]`);
+  console.log(`osMatchbtn:`);
+  console.log(osMatchBtn);
+  if (osMatchBtn) osMatchBtn.classList.add("active");
 
-  const tableHTML = tableData.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('');
-  document.getElementById('instruction-table').innerHTML = `<table border="1">${tableHTML}</table>`;
+  const filteredIndices = rowIndices.filter(
+    (index) => sheetDataArray[index][osColumnIndex] === osValue
+  );
+  const tableData = filteredIndices.map((rowIndex) =>
+    sheetDataArray[rowIndex].slice(stepsColumnIndex)
+  );
+  const tableType = filteredIndices.map(
+    (rowIndex) => sheetDataArray[rowIndex][typeColumnIndex]
+  );
+
+  const tableHTML = tableData
+    .map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`)
+    .join("");
+  //document.getElementById('instruction-table').innerHTML = `<table border="1">${tableHTML}</table>`;
 
   buildCarousel(tableData, tableType);
 }
 
 /* ========== 5. Carousel Logic ========== */
 function buildCarousel(tableData, tableType) {
+  console.log("building carousel");
   const container = document.getElementById("column-carousel");
+  const navContainer = document.getElementById("column-carousel-nav");
+  const infoContainer = document.getElementById("column-carousel-info");
   const numCols = tableData[0]?.length || 0;
 
-  const headers = tableData[tableType.indexOf('header')] || [];
-  const imageRows = tableData.filter((_, i) => tableType[i] === 'image');
-  const instructionRows = tableData.filter((_, i) => tableType[i] === 'instruction');
+  const headers = tableData[tableType.indexOf("header")] || [];
+  const imageRows = tableData.filter((_, i) => tableType[i] === "image");
+  const instructionRows = tableData.filter(
+    (_, i) => tableType[i] === "instruction"
+  );
 
   // Set slide index before rendering
   if (!isNaN(deepLinkParams.slide)) {
@@ -199,46 +290,74 @@ function buildCarousel(tableData, tableType) {
     deepLinkParams.slide = NaN;
   }
 
-  let html = `
-    <div style="display: flex;">
+  let navhtml = `
       <div class="carousel-nav">
-        ${headers.map((header, i) => `<button class="nav-btn" onclick="goToCarouselSlide(${i})">${header}</button>`).join('')}
-      </div>
-      <div class="carousel">
-        ${[...Array(numCols)].map((_, col) => `
-          <div class="carousel-slide${col === currentCarouselSlide ? ' active' : ''}" data-index="${col}">
-            <div class="image-section">${imageRows.map(row => `<div>${row[col] || ''}</div>`).join('')}</div>
-            <div class="instruction-section">${instructionRows.map(row => `<div>${row[col] || ''}</div>`).join('')}</div>
-            <div class="carousel-controls">
-              <button onclick="prevCarouselSlide()">←</button>
-              <button onclick="nextCarouselSlide()">→</button>
-            </div>
-          </div>`).join('')}
-      </div>
-    </div>`;
+        ${headers
+          .map(
+            (header, i) =>
+              `<button class="btn btn-dmz-purple w-100 mb-2${i === currentCarouselSlide ? ' active btn-dmz-purple' : ''}" onclick="goToCarouselSlide(${i})">${header}</button>`
+          )
+          .join("")}
+      </div>`;
 
-  container.innerHTML = html;
+  let infohtml = `
+      <div class="carousel">
+        ${[...Array(numCols)]
+          .map(
+            (_, col) => `
+          <div class="carousel-slide${
+            col === currentCarouselSlide ? " active" : ""
+          }" data-index="${col}">
+            <div class="image-section">${imageRows
+              .map((row) => `<div>${row[col] || ""}</div>`)
+              .join("")}</div>
+            <div class="instruction-section">${instructionRows
+              .map((row) => `<div>${row[col] || ""}</div>`)
+              .join("")}</div>
+            <div class="carousel-controls">
+              <button class="btn btn-dmz-purple" onclick="prevCarouselSlide()">←</button>
+              <button class="btn btn-dmz-purple" onclick="nextCarouselSlide()">→</button>
+            </div>
+          </div>`
+          )
+          .join("")}
+      </div>`;
+
+  navContainer.innerHTML = navhtml;
+  infoContainer.innerHTML = infohtml;
   updateCarousel();
 }
 
 function updateCarousel() {
+  console.log("Updating Carousel");
   const slides = document.querySelectorAll(".carousel-slide");
   slides.forEach((slide, i) => {
     slide.classList.toggle("active", i === currentCarouselSlide);
   });
+  const navButtons = document.querySelectorAll(".carousel-nav .btn");
+  navButtons.forEach((button, i) => {
+    button.classList.toggle("active", i === currentCarouselSlide);
+  });
 
-  const nextButton = document.querySelector(".carousel-controls button:last-child");
-  const prevButton = document.querySelector(".carousel-controls button:first-child");
+  const nextButton = document.querySelector(
+    ".carousel-controls button:last-child"
+  );
+  const prevButton = document.querySelector(
+    ".carousel-controls button:first-child"
+  );
 
-  if (nextButton) nextButton.disabled = currentCarouselSlide === slides.length - 1;
+  if (nextButton) nextButton.disabled = currentCarouselSlide === (slides.length - 1);
   if (prevButton) prevButton.disabled = currentCarouselSlide === 0;
 
-  const topic = document.querySelector('.buttons-column button.active')?.textContent;
-  const os = document.querySelector('.tab-button.active')?.textContent;
+  const topic = document.querySelector(
+    "#topic-buttons .active"
+  )?.textContent;
+  const os = document.querySelector("#os-buttons .active")?.textContent;
   updateURL(topic, os, currentCarouselSlide);
 }
 
 function goToCarouselSlide(index) {
+  console.log(`Switching to slide ${index}`);
   currentCarouselSlide = index;
   updateCarousel();
 }
@@ -259,12 +378,14 @@ function nextCarouselSlide() {
 }
 
 /* ========== 6. Collapsible Toggle ========== */
-function setupCollapsibles() {
-  document.querySelectorAll(".collapsible").forEach(coll => {
+/* function setupCollapsibles() {
+  document.querySelectorAll(".collapsible").forEach((coll) => {
     coll.addEventListener("click", function () {
       this.classList.toggle("active");
       const content = this.nextElementSibling;
-      content.style.maxHeight = content.style.maxHeight ? null : `${content.scrollHeight}px`;
+      content.style.maxHeight = content.style.maxHeight
+        ? null
+        : `${content.scrollHeight}px`;
     });
   });
-}
+} */
