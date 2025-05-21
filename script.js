@@ -110,7 +110,7 @@ function handleDeepLink() {
 
   const tryActivate = setInterval(() => {
     const topicButtons = Array.from(
-      document.querySelectorAll("#topic-buttons .btn")
+      document.querySelectorAll("#topic-buttons .nav-link")
     );
     const matchButton = topicButtons.find(
       (btn) => btn.textContent.trim() === topic
@@ -120,7 +120,7 @@ function handleDeepLink() {
       const rows = matchButton.getAttribute("data-rows").split(",").map(Number);
       populateOSButtons(rows, os);
       showContent(rows, os);
-      
+
       clearInterval(tryActivate);
     }
   }, 100);
@@ -143,7 +143,7 @@ function populateButtons() {
     const button = document.createElement("button");
     button.textContent = text;
     button.setAttribute("data-rows", indices.join(","));
-    button.classList.add('btn', 'btn-dmz-purple');
+    button.classList.add("nav-link");
 
     const tabValues = [
       ...new Set(indices.map((i) => sheetDataArray[i][osColumnIndex])),
@@ -153,22 +153,19 @@ function populateButtons() {
     button.onclick = () => {
       console.log("~");
       console.log(`Clicked on Topic ${text}`);
-      
+
       // Remove active from all topic buttons
-      document.querySelectorAll('#topic-buttons .btn').forEach(btn => {
-        btn.classList.remove('active', 'btn-dmz-purple');
-        btn.classList.add('btn-dmz-purple');
+      document.querySelectorAll("#topic-buttons .nav-link").forEach((btn) => {
+        btn.classList.remove("active");
       });
       // Set active for this button
-      button.classList.remove('btn-dmz-purple');
-      button.classList.add('active', 'btn-dmz-purple');
+      button.classList.add("active");
 
       populateOSButtons(indices, defaultTab);
       goToCarouselSlide(0);
       showContent(indices, defaultTab);
     };
 
-    
     /* if (!deepLinkParams.topic && groupIndex === 0) {
       button.classList.remove('btn-dmz-purple');
       button.classList.add('active', 'btn-dmz-purple');
@@ -192,36 +189,33 @@ function populateOSButtons(rowIndices, activeOSValue = null) {
   osValues.forEach((osValue, index) => {
     let button;
 
-    
-      // Create new button
-      button = document.createElement("button");
-      button.textContent = osValue;
-      button.classList.add("btn", "btn-dmz-purple", "os-button");
-      button.classList.remove('active');
-      button.setAttribute("data-os", osValue);
-      osContainer.appendChild(button);
+    // Create new button
+    button = document.createElement("button");
+    button.textContent = osValue;
+    button.classList.add("nav-link", "os-button");
+    button.classList.remove("active");
+    button.setAttribute("data-os", osValue);
+    osContainer.appendChild(button);
 
-      button.addEventListener("click", function () {
+    button.addEventListener("click", function () {
+      const topic = document.querySelector(
+        "#topic-buttons .active"
+      )?.textContent;
+      console.log("~~");
+      console.log(`Clicked on ${button.textContent} for Topic: ${topic}`);
 
-        const topic = document.querySelector("#topic-buttons .active")?.textContent;
-        console.log("~~");
-        console.log(`Clicked on ${button.textContent} for Topic: ${topic}`);
-
-        // Handle class toggle
-        document.querySelectorAll('#os-buttons .btn').forEach(btn => {
-          btn.classList.remove('active', 'btn-dmz-purple');
-          btn.classList.add('btn-dmz-purple');
-        });
-        button.classList.remove('btn-dmz-purple');
-        button.classList.add('active', 'btn-dmz-purple');
-
-        goToCarouselSlide(0);
-        showContent(rowIndices, osValue);
+      // Handle class toggle
+      document.querySelectorAll("#os-buttons .nav-link").forEach((btn) => {
+        btn.classList.remove("active");
       });
-    
+      button.classList.add("active");
+
+      goToCarouselSlide(0);
+      showContent(rowIndices, osValue);
+    });
 
     // Set active state
-  /*   if (osValue === activeOSValue || (!activeOSValue && index === 0)) {
+    /*   if (osValue === activeOSValue || (!activeOSValue && index === 0)) {
       button.classList.remove("btn-dmz-purple");
       button.classList.add("active", "btn-dmz-purple");
     } else {
@@ -231,11 +225,10 @@ function populateOSButtons(rowIndices, activeOSValue = null) {
   });
 }
 
-
 function showContent(rowIndices, osValue) {
   console.log(`Showing Content for rows ${rowIndices} and OS ${osValue}`);
   document
-    .querySelectorAll("#topic-buttons .btn")
+    .querySelectorAll("#topic-buttons .nav-link")
     .forEach((btn) => btn.classList.remove("active"));
   const matchBtn = document.querySelector(
     `button[data-rows="${rowIndices.join(",")}"]`
@@ -245,7 +238,7 @@ function showContent(rowIndices, osValue) {
   if (matchBtn) matchBtn.classList.add("active");
 
   document
-    .querySelectorAll("#os-button .btn")
+    .querySelectorAll("#os-button .nav-link")
     .forEach((btn) => btn.classList.remove("active"));
   const osMatchBtn = document.querySelector(`button[data-os="${osValue}"]`);
   console.log(`osMatchbtn:`);
@@ -295,7 +288,9 @@ function buildCarousel(tableData, tableType) {
         ${headers
           .map(
             (header, i) =>
-              `<button class="btn btn-dmz-purple w-100 mb-2${i === currentCarouselSlide ? ' active btn-dmz-purple' : ''}" onclick="goToCarouselSlide(${i})">${header}</button>`
+              `<button class="btn btn-dmz-purple w-100 mb-2${
+                i === currentCarouselSlide ? " active btn-dmz-purple" : ""
+              }" onclick="goToCarouselSlide(${i})">${header}</button>`
           )
           .join("")}
       </div>`;
@@ -346,12 +341,11 @@ function updateCarousel() {
     ".carousel-controls button:first-child"
   );
 
-  if (nextButton) nextButton.disabled = currentCarouselSlide === (slides.length - 1);
+  if (nextButton)
+    nextButton.disabled = currentCarouselSlide === slides.length - 1;
   if (prevButton) prevButton.disabled = currentCarouselSlide === 0;
 
-  const topic = document.querySelector(
-    "#topic-buttons .active"
-  )?.textContent;
+  const topic = document.querySelector("#topic-buttons .active")?.textContent;
   const os = document.querySelector("#os-buttons .active")?.textContent;
   updateURL(topic, os, currentCarouselSlide);
 }

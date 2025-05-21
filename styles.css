@@ -1,124 +1,190 @@
 /* Updated styles.css for Bootstrap hybrid layout */
+/* Reusable DMZ brand variables  */
+:root {
+  --dmz-primary: #7535FB;
+  --dmz-primary-light: #F4EEFF;
+  --dmz-primary-hover: #A07CFF;
+  
+}
 
 @font-face {
-    font-family: "Avenir LT W01_55 Roman";
-    src: url('/assets/75c84254-5125-412c-bc24-56769ae3b627.woff2') format('woff2');
-  }
-  
-  body {
-    font-family: "Avenir LT W01_55 Roman", sans-serif;
-    background-color: #fafafa;
-    color: #333;
-  }
-  
-  h1 {
-    font-family: "Avenir LT W01_55 Roman", sans-serif;
-    color: #7535FB !important;
-  }
-  
-  /*Use custom DMZ colours for buttons */
+  font-family: "Avenir LT W01_55 Roman";
+  src: url("/assets/75c84254-5125-412c-bc24-56769ae3b627.woff2") format("woff2");
+}
 
-  .btn-dmz-purple {
-    background-color: #E6DBFF !important;
-    color: #7535FB !important;
-    border-color: #7535FB !important;
-  }
-  .btn-dmz-purple.active,.btn-dmz-purple.active:hover{
-    background-color: #7535FB !important;
-    border-color: #7535FB !important;
-    color: #fff !important;
-  }
-  .btn-dmz-purple:hover{
-    background-color: #936BFF !important;
-    border-color: #7535FB !important;
-    color: #7535FB  !important;
-  }
+body {
+  font-family: "Avenir LT W01_55 Roman", sans-serif;
+  background-color: #fafafa;
+  color: #333;
+}
 
-  
+h1 {
+  font-family: "Avenir LT W01_55 Roman", sans-serif;
+  color: var(--dmz-primary) !important;
+}
 
-  
-  /* Optional collapsible logic (still controlled by JS) */
-  .collapsible {
-    cursor: pointer;
-    padding: 10px;
-    width: 100%;
-    border: none;
-    text-align: left;
-    background-color: #f0f0f0;
-    border-radius: 4px;
-    margin: 10px 0;
-  }
-  
-  .collapsible:after {
-    content: '\002B';
-    float: right;
-    margin-left: 5px;
-  }
-  
-  .collapsible.active:after {
-    content: "\2212";
-  }
-  
-  .collapsible-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.2s ease-out;
-  }
-  
-  /* Carousel & Slide Layouts */
-  .carousel {
-    background: #ffffff;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 1em;
-    display: flex;
-    flex-direction: column;
-    min-height: 400px;
-  }
-  
-  .carousel-slide {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    flex: 1;
-  }
-  
-  .carousel-slide.active {
-    display: flex;
-  }
-  
-  .image-section,
-  .instruction-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100px;
-    padding: 0 20px;
-    text-align: center;
-  }
-  
-  .instruction-section div {
-    margin: 10px 0;
-    word-wrap: break-word;
-    max-width: 80%;
-  }
-  
-  /* Carousel controls */
-  .carousel-controls {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    max-width: 400px;
-    margin: 20px auto 0;
-  }
-  
-  /* Carousel navigation buttons */
-  .carousel-nav {
-    display: flex;
-    flex-direction: column;
-    margin-right: 1rem;
-    min-width: 150px;
-  }
+/*Use custom DMZ colours for buttons */
+
+.btn-dmz-purple {
+  background-color: var(--dmz-primary-light) !important;
+  color: var(--dmz-primary) !important;
+  border-color: var(--dmz-primary) !important;
+}
+.btn-dmz-purple.active,
+.btn-dmz-purple.active:hover {
+  background-color: var(--dmz-primary) !important;
+  border-color: var(--dmz-primary)!important;
+  color: #fff !important;
+}
+.btn-dmz-purple:hover {
+  background-color: var(--dmz-primary-hover) !important;
+  border-color: var(--dmz-primary) !important;
+  color: var(--dmz-primary) !important;
+}
+
+
+
+/* Topic Pills */
+
+#topic-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* space between pills */
+  align-items: stretch; /* 🔥 makes all children fill width + equal height */
+}
+
+#topic-buttons .nav-link {
+  color: var(--dmz-primary);
+  background-color: transparent;
+  border-radius: 0.5rem;
+  width: 100%;
+  display: flex;
+  flex-grow: 1;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+#topic-buttons .nav-link:hover {
+  background-color: var(--dmz-primary-light);
+}
+
+#topic-buttons .nav-link.active {
+  background-color: var(--dmz-primary);
+  color: #fff;
+}
+
+.topicColumn {
+  border-right: 5px solid #fff;
+  border-radius: 0.5rem;
+  box-shadow: inset 0 0 0 2px var(--dmz-primary-hover);
+}
+
+/* OS Tabs */
+#os-buttons .nav-link {
+  color: var(--dmz-primary);
+  background-color: transparent;
+  border: 1px solid var(--dmz-primary-hover);
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+#os-buttons .nav-link:hover {
+  background-color: var(--dmz-primary-light);
+}
+
+#os-buttons .nav-link.active {
+  background-color: var(--dmz-primary-hover);
+  color: #fff;
+  border-color: var(--dmz-primary) var(--dmz-primary) transparent;
+}
+
+
+/* Optional collapsible logic (still controlled by JS) */
+.collapsible {
+  cursor: pointer;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+.collapsible:after {
+  content: "\002B";
+  float: right;
+  margin-left: 5px;
+}
+
+.collapsible.active:after {
+  content: "\2212";
+}
+
+.collapsible-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+}
+
+/* Carousel & Slide Layouts */
+.carouselRow {
+  background-color: #A07CFF;
+  border-radius: 0.4rem;
+}
+.carousel {
+  background: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
+.carousel-slide {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  flex: 1;
+}
+
+.carousel-slide.active {
+  display: flex;
+}
+
+.image-section,
+.instruction-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.instruction-section div {
+  margin: 10px 0;
+  word-wrap: break-word;
+  max-width: 80%;
+}
+
+/* Carousel controls */
+.carousel-controls {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 400px;
+  margin: 20px auto 0;
+}
+
+/* Carousel navigation buttons */
+.carousel-nav {
+  display: flex;
+  flex-direction: column;
+  margin-right: 1rem;
+  min-width: 150px;
+}

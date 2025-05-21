@@ -13,7 +13,7 @@
     <link href="styles.css" rel="stylesheet" />
   </head>
   <body class="bg-light p-4">
-    <div class="container-fluid">
+    <div class="container-fluid min-vh-100 d-flex flex-column">
       <!-- Row 1: Title -->
       <div class="row">
         <div class="col-12">
@@ -24,23 +24,23 @@
       <!-- Grid layout starts -->
       <div class="row">
         <!-- Left Column: Topic buttons (stacked vertically, each in their own row) -->
-        <div class="col-md-2">
-          <div id="topic-buttons" class="d-grid gap-2">
+        <div class="col-md-2 topicColumn">
+          <div id="topic-buttons" class="nav nav-pills mb-3 mt-3">
             <!-- Each button will appear in its own row -->
           </div>
         </div>
 
-        <!-- Right Column: OS buttons on top, then carousel -->
+        <!-- Right Column: OS  on top, then carousel -->
         <div class="col-md-10">
           <!-- OS Buttons Row -->
-          <div id="os-buttons" class="d-flex flex-wrap gap-2 mb-3"></div>
+          <div id="os-buttons" class="nav nav-tabs"></div>
 
           <!-- Carousel Layout -->
-          <div class="row">
+          <div class="row p-3 carouselRow">
             <!-- Carousel navigation buttons (headings) -->
             <div id="column-carousel"></div>
             <div id="column-carousel-nav" class="col-md-2"></div>
-
+            
             <!-- Carousel image, instructions, and arrows -->
 
             <div id="column-carousel-info" class="col-md-10"></div>
